@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#53453A" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>NicoPark 店家管理</title>
+  <link rel="icon" type="image/png" href="nico-nico-pet-house-logo.png" />
+  <style>
+    :root {
+      --oat: #AC9D8D;
+      --oat-soft: #DDD0C3;
+      --milk: #E7D9CC;
+      --warm: #F8F3EC;
+      --paper: #FFFCF8;
+      --page: #F1E8DE;
+      --cocoa: #53453A;
+      --cocoa-deep: #3F332B;
+      --ink: #4A3C32;
+      --muted: #7A6B5E;
+      --line: rgba(83, 69, 58, 0.12);
+      --ok: #66745C;
+      --warn: #9A7354;
+      --danger: #9A5848;
+      --blue: #5E6F78;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+      --shadow: 0 0 0 1px rgba(83, 69, 58, .07), 0 14px 36px -22px rgba(63, 51, 43, .34);
+      --body: "PingFang TC", "Hiragino Sans", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      --display: "Iowan Old Style", "Palatino Linotype", "Songti TC", "LiSong Pro", "PMingLiU", serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 45% at 7% -10%, rgba(172, 157, 141, .24), transparent 58%),
+        linear-gradient(180deg, #F8F2EA, var(--page));
+      font-family: var(--body);
+      line-height: 1.5;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    .login-shell {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 24px 16px;
+    }
+    .login-card {
+      width: min(430px, 100%);
+      border-radius: 32px;
+      background: rgba(255, 252, 248, .9);
+      box-shadow: var(--shadow);
+      padding: 30px 24px 24px;
+      text-align: center;
+      backdrop-filter: blur(16px);
+    }
+    .logo {
+      width: 164px;
+      height: 78px;
+      object-fit: cover;
+      object-position: center 48%;
+      margin: 0 auto 8px;
+    }
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--oat);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { overflow-wrap: anywhere; }
+    .login-card h1 {
+      margin: 0;
+      color: var(--cocoa-deep);
+      font-family: var(--display);
+      font-size: 1.55rem;
+    }
+    .login-card > p:not(.eyebrow) {
+      margin: 8px 0 22px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .field { text-align: left; margin-top: 13px; }
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--cocoa);
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    input, select, textarea {
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      border-radius: var(--radius-md);
+      outline: 0;
+      color: var(--ink);
+      background: var(--warm);
+      box-shadow: inset 0 0 0 1px var(--line);
+      padding: 10px 13px;
+    }
+    textarea { min-height: 112px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      background: #fff;
+      box-shadow: inset 0 0 0 1.5px var(--cocoa), 0 0 0 3px rgba(172, 157, 141, .23);
+    }
+    .btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 18px;
+      background: var(--cocoa);
+      color: var(--warm);
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    .btn:hover:not(:disabled) { background: var(--cocoa-deep); }
+    .btn.secondary {
+      color: var(--cocoa);
+      background: var(--warm);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    .btn.ghost {
+      color: var(--muted);
+      background: transparent;
+      padding-inline: 10px;
+    }
+    .login-card .btn { width: 100%; margin-top: 18px; }
+    .message {
+      margin: 12px 0 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(154, 88, 72, .1);
+      color: #7C4035;
+      text-align: left;
+      font-size: .84rem;
+    }
+
+    .app-shell { min-height: 100dvh; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(83, 69, 58, .08);
+      background: rgba(248, 243, 236, .88);
+      backdrop-filter: blur(18px) saturate(1.2);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100% - 28px));
+      min-height: 68px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+    .brand img {
+      width: 68px;
+      height: 42px;
+      object-fit: cover;
+      object-position: center 48%;
+      flex: none;
+    }
+    .brand strong {
+      display: block;
+      color: var(--cocoa-deep);
+      font-family: var(--display);
+      font-size: 1.06rem;
+      line-height: 1.15;
+    }
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: .72rem;
+    }
+    .top-actions { display: flex; align-items: center; gap: 4px; }
+    .top-actions .btn { white-space: nowrap; }
+    .admin-name { color: var(--muted); font-size: .78rem; }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: auto;
+      padding: 26px 0 60px;
+    }
+    .page-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .page-head h1 {
+      margin: 0;
+      color: var(--cocoa-deep);
+      font-family: var(--display);
+      font-size: clamp(1.65rem, 1.3rem + 1vw, 2.2rem);
+    }
+    .page-head p { margin: 4px 0 0; color: var(--muted); font-size: .88rem; }
+    .page-head .btn { white-space: nowrap; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric {
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 16px 17px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric::after {
+      content: "";
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      right: -24px;
+      bottom: -26px;
+      border-radius: 50%;
+      background: var(--tone, var(--oat-soft));
+      opacity: .5;
+    }
+    .metric span { display: block; color: var(--muted); font-size: .76rem; }
+    .metric strong {
+      display: block;
+      margin-top: 2px;
+      color: var(--cocoa-deep);
+      font-family: var(--display);
+      font-size: 1.65rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 16px;
+      align-items: start;
+    }
+    .surface {
+      border-radius: var(--radius-xl);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+    .surface h2 {
+      margin: 0;
+      color: var(--cocoa-deep);
+      font-size: 1.05rem;
+    }
+    .surface-lede { margin: 4px 0 14px; color: var(--muted); font-size: .8rem; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(190px, 1fr) 138px 142px 142px auto;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    .filters .field { margin: 0; }
+    .filters label { font-size: .72rem; }
+    .filters input, .filters select { min-height: 42px; padding-block: 8px; font-size: .84rem; }
+    .filters .btn { min-height: 42px; padding-inline: 15px; font-size: .84rem; }
+    .result-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: .76rem;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-lg);
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: .82rem;
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      background: var(--warm);
+      font-size: .72rem;
+      letter-spacing: .04em;
+    }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover { background: rgba(231, 217, 204, .24); }
+    tbody tr:last-child td { border-bottom: 0; }
+    td strong { display: block; color: var(--cocoa-deep); font-size: .84rem; }
+    td small { display: block; color: var(--muted); font-size: .7rem; }
+    .table-empty { padding: 34px 12px; text-align: center; color: var(--muted); }
+    .mobile-cases { display: none; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: var(--tone-text, var(--cocoa));
+      background: var(--tone-bg, var(--warm));
+      font-size: .7rem;
+      font-weight: 700;
+    }
+    .status[data-status="待審核"] { --tone-bg: #F5EADF; --tone-text: #805E46; }
+    .status[data-status="待聯繫"] { --tone-bg: #EEE7D5; --tone-text: #77683A; }
+    .status[data-status="已確認"] { --tone-bg: #E2E9E5; --tone-text: #4F6A5B; }
+    .status[data-status="已完成"] { --tone-bg: #E2E7E9; --tone-text: #526771; }
+    .status[data-status="已取消"] { --tone-bg: #EFE4E1; --tone-text: #875247; }
+
+    .side-card + .side-card { margin-top: 12px; }
+    .customer-search { display: flex; gap: 7px; }
+    .customer-search input { min-width: 0; }
+    .customer-search .btn { flex: none; padding-inline: 14px; }
+    .customer-results { display: grid; gap: 8px; margin-top: 12px; }
+    .customer-item {
+      border: 0;
+      width: 100%;
+      border-radius: var(--radius-md);
+      padding: 11px 12px;
+      color: inherit;
+      background: var(--warm);
+      box-shadow: inset 0 0 0 1px var(--line);
+      text-align: left;
+    }
+    .customer-item strong { display: block; color: var(--cocoa-deep); font-size: .84rem; }
+    .customer-item span { display: block; margin-top: 2px; color: var(--muted); font-size: .72rem; }
+    .quick-links { display: grid; gap: 8px; }
+    .quick-links a {
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      text-decoration: none;
+      background: var(--warm);
+      font-size: .8rem;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      justify-content: flex-end;
+      background: rgba(63, 51, 43, .32);
+      backdrop-filter: blur(5px);
+    }
+    .drawer-panel {
+      width: min(620px, 100%);
+      height: 100%;
+      overflow: auto;
+      background: var(--page);
+      box-shadow: -18px 0 50px -26px rgba(63, 51, 43, .55);
+      padding: max(20px, env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
+    }
+    .drawer-head {
+      position: sticky;
+      top: -20px;
+      z-index: 2;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin: -20px -18px 14px;
+      padding: 20px 18px 12px;
+      background: rgba(241, 232, 222, .92);
+      backdrop-filter: blur(14px);
+    }
+    .drawer-head h2 { margin: 0; color: var(--cocoa-deep); font-family: var(--display); }
+    .drawer-head p { margin: 2px 0 0; color: var(--muted); font-size: .75rem; }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      flex: none;
+      border: 0;
+      border-radius: 50%;
+      color: var(--cocoa);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      font-size: 1.25rem;
+    }
+    .detail-section {
+      border-radius: var(--radius-lg);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-top: 12px;
+    }
+    .detail-section h3 {
+      margin: 0 0 11px;
+      color: var(--cocoa-deep);
+      font-size: .92rem;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px 14px;
+    }
+    .detail-grid div { min-width: 0; }
+    .detail-grid dt { color: var(--muted); font-size: .7rem; }
+    .detail-grid dd { margin: 2px 0 0; color: var(--ink); font-size: .84rem; overflow-wrap: anywhere; }
+    .pet-detail {
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+    }
+    .pet-detail:first-of-type { border-top: 0; padding-top: 0; }
+    .pet-detail:last-child { padding-bottom: 0; }
+    .pet-detail h4 { margin: 0 0 9px; color: var(--cocoa); }
+    .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .detail-actions .btn { flex: 1; min-width: 150px; text-decoration: none; }
+    .update-grid { display: grid; grid-template-columns: 180px 1fr; gap: 10px; }
+    .drawer-save {
+      position: sticky;
+      bottom: 0;
+      margin: 12px -18px -24px;
+      padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, transparent, var(--page) 25%);
+    }
+    .drawer-save .btn { width: 100%; }
+    .loading { padding: 40px 10px; text-align: center; color: var(--muted); }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: calc(22px + env(safe-area-inset-bottom));
+      width: max-content;
+      max-width: calc(100% - 32px);
+      transform: translateX(-50%);
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: var(--cocoa-deep);
+      color: var(--warm);
+      box-shadow: 0 16px 34px -15px rgba(0, 0, 0, .6);
+      font-size: .82rem;
+    }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .side-column { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .side-card + .side-card { margin-top: 0; }
+      .filters { grid-template-columns: 1fr 135px 1fr 1fr auto; }
+    }
+    @media (max-width: 680px) {
+      .topbar-inner, main { width: min(100% - 20px, 1180px); }
+      .topbar-inner { min-height: 62px; }
+      .brand span, .admin-name { display: none; }
+      .brand img { width: 56px; height: 36px; }
+      .brand strong { font-size: .94rem; white-space: nowrap; }
+      .top-actions .btn { min-height: 38px; padding: 6px 8px; font-size: .72rem; }
+      main { padding-top: 18px; }
+      .page-head { align-items: flex-start; }
+      .page-head .btn { min-height: 40px; padding: 8px 12px; font-size: .78rem; }
+      .metrics { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .metric { padding: 13px 14px; }
+      .metric strong { font-size: 1.4rem; }
+      .surface { border-radius: 22px; padding: 14px; }
+      .filters { grid-template-columns: 1fr 120px; }
+      .filters .date-field { display: none; }
+      .filters .btn { grid-column: 1 / -1; }
+      .table-wrap { display: none; }
+      .mobile-cases { display: grid; gap: 9px; }
+      .case-card {
+        width: 100%;
+        border: 0;
+        border-radius: 16px;
+        padding: 13px;
+        background: var(--warm);
+        box-shadow: inset 0 0 0 1px var(--line);
+        color: inherit;
+        text-align: left;
+      }
+      .case-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+      .case-card strong { display: block; color: var(--cocoa-deep); }
+      .case-card p { margin: 6px 0 0; color: var(--muted); font-size: .76rem; }
+      .case-card small { display: block; margin-top: 4px; color: var(--muted); }
+      .side-column { grid-template-columns: 1fr; }
+      .detail-grid, .update-grid { grid-template-columns: 1fr; }
+      .drawer-panel { border-radius: 24px 24px 0 0; height: min(92dvh, 900px); margin-top: auto; }
+      .drawer { align-items: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login-shell" id="login-view">
+    <form class="login-card" id="login-form" autocomplete="on">
+      <img class="logo" src="nico-nico-pet-house-logo.png" alt="Nico Nico Pet House" />
+      <p class="eyebrow">store console</p>
+      <h1>NicoPark 店家管理</h1>
+      <p>案件、客戶與毛孩資料都在同一個地方。</p>
+      <div class="field">
+        <label for="username">管理帳號</label>
+        <input id="username" name="username" type="text" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="password">管理密碼</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+      </div>
+      <button class="btn" type="submit" id="login-button">安全登入</button>
+      <p class="message" id="login-message" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <div class="app-shell" id="app-view" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <img src="nico-nico-pet-house-logo.png" alt="" />
+          <div>
+            <strong>NicoPark Console</strong>
+            <span>尼口尼口寵物精緻美容旅館</span>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span class="admin-name" id="admin-name"></span>
+          <a class="btn ghost" href="index.html" target="_blank" rel="noopener">查看前台</a>
+          <button class="btn ghost" type="button" id="logout-button">登出</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="page-head">
+        <div>
+          <p class="eyebrow">today at nicopark</p>
+          <h1>入園案件</h1>
+          <p id="last-sync">尚未同步</p>
+        </div>
+        <button class="btn secondary" type="button" id="refresh-button">重新整理</button>
+      </div>
+
+      <section class="metrics" aria-label="案件統計">
+        <article class="metric" style="--tone:#E6D1C2"><span>今日新增</span><strong id="stat-today">—</strong></article>
+        <article class="metric" style="--tone:#E9DFC2"><span>待處理</span><strong id="stat-pending">—</strong></article>
+        <article class="metric" style="--tone:#CFDDD4"><span>已確認</span><strong id="stat-confirmed">—</strong></article>
+        <article class="metric" style="--tone:#D7DFE2"><span>全部案件</span><strong id="stat-total">—</strong></article>
+      </section>
+
+      <div class="workspace">
+        <section class="surface">
+          <h2>案件清單</h2>
+          <p class="surface-lede">點選案件即可看完整資料、更新狀態與店家備註。</p>
+          <form class="filters" id="filter-form">
+            <div class="field">
+              <label for="case-query">搜尋</label>
+              <input id="case-query" type="search" placeholder="案件、客戶、電話或毛孩" />
+            </div>
+            <div class="field">
+              <label for="status-filter">狀態</label>
+              <select id="status-filter">
+                <option value="">全部</option>
+              </select>
+            </div>
+            <div class="field date-field">
+              <label for="date-from">開始日期</label>
+              <input id="date-from" type="date" />
+            </div>
+            <div class="field date-field">
+              <label for="date-to">結束日期</label>
+              <input id="date-to" type="date" />
+            </div>
+            <button class="btn" type="submit">套用</button>
+          </form>
+          <p class="result-meta"><span id="result-count">載入中…</span><span id="result-note"></span></p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>送出時間</th>
+                  <th>案件／客戶</th>
+                  <th>飼主</th>
+                  <th>毛孩</th>
+                  <th>狀態</th>
+                </tr>
+              </thead>
+              <tbody id="case-tbody"></tbody>
+            </table>
+            <p class="table-empty" id="table-empty" hidden>目前沒有符合條件的案件。</p>
+          </div>
+          <div class="mobile-cases" id="mobile-cases"></div>
+        </section>
+
+        <aside class="side-column">
+          <section class="surface side-card">
+            <h2>找舊客</h2>
+            <p class="surface-lede">輸入客戶編號、姓名、手機或毛孩名字。</p>
+            <form class="customer-search" id="customer-form">
+              <input id="customer-query" type="search" placeholder="CUS-XXXXXX" />
+              <button class="btn" type="submit">找</button>
+            </form>
+            <div class="customer-results" id="customer-results"></div>
+          </section>
+          <section class="surface side-card">
+            <h2>管理捷徑</h2>
+            <p class="surface-lede">原始資料與公開表單。</p>
+            <div class="quick-links">
+              <a id="sheet-link" href="#" target="_blank" rel="noopener">開啟 Google 試算表 ↗</a>
+              <a href="index.html" target="_blank" rel="noopener">開啟客人填寫頁 ↗</a>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <section class="drawer" id="case-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+    <div class="drawer-panel">
+      <header class="drawer-head">
+        <div>
+          <p class="eyebrow">case detail</p>
+          <h2 id="drawer-title">案件資料</h2>
+          <p id="drawer-subtitle"></p>
+        </div>
+        <button class="icon-btn" type="button" id="drawer-close" aria-label="關閉">×</button>
+      </header>
+      <div id="drawer-content"><p class="loading">載入中…</p></div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfWDmN_fO0lW1sp4vbx8vx16s7DVJgoxNWi_r0ahd7Arq3aJhVhhIGP9EpvL99E7KT/exec";
+    const SESSION_KEY = "nicopark-admin-session";
+    const FETCH_TIMEOUT = 30000;
+    let token = "";
+    let currentCaseId = "";
+    let toastTimer = null;
+
+    const $ = (selector, root) => (root || document).querySelector(selector);
+
+    function text(value) {
+      return value == null || value === "" ? "—" : String(value);
+    }
+
+    function value(id) {
+      const el = document.getElementById(id);
+      return el ? String(el.value || "").trim() : "";
+    }
+
+    async function api(payload) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: JSON.stringify(payload),
+          redirect: "follow",
+          signal: controller.signal
+        });
+        const body = await response.text();
+        let data;
+        try { data = JSON.parse(body); }
+        catch (error) { throw new Error("伺服器回傳格式異常。"); }
+        if (!response.ok || data.success === false || data.status === "error") {
+          throw new Error(data.message || "操作失敗，請稍後再試。");
+        }
+        return data;
+      } catch (error) {
+        if (error.name === "AbortError") throw new Error("連線逾時，請稍後重試。");
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function auth(action, extra) {
+      return api(Object.assign({ action: action, token: token }, extra || {}));
+    }
+
+    function setSession(sessionToken) {
+      token = sessionToken || "";
+      if (token) sessionStorage.setItem(SESSION_KEY, token);
+      else sessionStorage.removeItem(SESSION_KEY);
+    }
+
+    function showLogin(message) {
+      setSession("");
+      $("#app-view").hidden = true;
+      $("#login-view").hidden = false;
+      const box = $("#login-message");
+      box.hidden = !message;
+      box.textContent = message || "";
+      setTimeout(() => $("#username").focus(), 20);
+    }
+
+    function showApp() {
+      $("#login-view").hidden = true;
+      $("#app-view").hidden = false;
+    }
+
+    function toast(message) {
+      const box = $("#toast");
+      box.textContent = message;
+      box.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { box.hidden = true; }, 2600);
+    }
+
+    function isAuthError(error) {
+      return /登入已失效|登入已逾時|重新登入/.test(String(error && error.message || ""));
+    }
+
+    async function loadDashboard() {
+      const data = await auth("adminDashboard");
+      const stats = data.stats || {};
+      $("#stat-today").textContent = text(stats.today);
+      $("#stat-pending").textContent = text(stats.pending);
+      $("#stat-confirmed").textContent = text(stats.confirmed);
+      $("#stat-total").textContent = text(stats.total);
+      $("#admin-name").textContent = (data.username || "管理員") + " 已登入";
+      if (data.sheetUrl) $("#sheet-link").href = data.sheetUrl;
+
+      const status = $("#status-filter");
+      if (status.options.length === 1) {
+        (data.statuses || []).forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          status.appendChild(option);
+        });
+      }
+    }
+
+    async function loadCases() {
+      $("#result-count").textContent = "載入中…";
+      $("#result-note").textContent = "";
+      const data = await auth("adminListCases", {
+        query: value("case-query"),
+        statusFilter: value("status-filter"),
+        dateFrom: value("date-from"),
+        dateTo: value("date-to")
+      });
+      renderCases(data.cases || []);
+      $("#result-count").textContent = "共 " + Number(data.totalMatched || 0) + " 筆";
+      $("#result-note").textContent = data.truncated ? "目前顯示最新 200 筆" : "";
+    }
+
+    async function refreshAll(silent) {
+      const button = $("#refresh-button");
+      button.disabled = true;
+      try {
+        await Promise.all([loadDashboard(), loadCases()]);
+        $("#last-sync").textContent = "最後同步 " + new Intl.DateTimeFormat("zh-TW", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }).format(new Date());
+        if (!silent) toast("資料已更新");
+      } catch (error) {
+        if (isAuthError(error)) return showLogin(error.message);
+        toast(error.message || "載入失敗");
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function renderCases(cases) {
+      const tbody = $("#case-tbody");
+      const mobile = $("#mobile-cases");
+      tbody.replaceChildren();
+      mobile.replaceChildren();
+      $("#table-empty").hidden = cases.length > 0;
+
+      cases.forEach((item) => {
+        const row = document.createElement("tr");
+        const cells = [
+          text(item.submittedAt),
+          "",
+          "",
+          (item.petNames || []).join("、") || "—",
+          ""
+        ];
+        cells.forEach((cellText) => {
+          const td = document.createElement("td");
+          td.textContent = cellText;
+          row.appendChild(td);
+        });
+        const caseCell = row.children[1];
+        caseCell.replaceChildren();
+        const caseStrong = document.createElement("strong");
+        caseStrong.textContent = item.caseId || "—";
+        const customerSmall = document.createElement("small");
+        customerSmall.textContent = item.customerId || "尚無客戶編號";
+        caseCell.append(caseStrong, customerSmall);
+
+        const ownerCell = row.children[2];
+        ownerCell.replaceChildren();
+        const ownerStrong = document.createElement("strong");
+        ownerStrong.textContent = item.ownerName || "—";
+        const phoneSmall = document.createElement("small");
+        phoneSmall.textContent = item.phone || "—";
+        ownerCell.append(ownerStrong, phoneSmall);
+
+        row.children[4].replaceChildren(statusBadge(item.status));
+        row.addEventListener("click", () => openCase(item.caseId));
+        tbody.appendChild(row);
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "case-card";
+        const top = document.createElement("div");
+        top.className = "case-card-top";
+        const title = document.createElement("strong");
+        title.textContent = item.ownerName + " · " + ((item.petNames || []).join("、") || "毛孩");
+        top.append(title, statusBadge(item.status));
+        const meta = document.createElement("p");
+        meta.textContent = (item.caseId || "") + "　" + (item.customerId || "");
+        const when = document.createElement("small");
+        when.textContent = (item.submittedAt || "") + "　" + (item.phone || "");
+        card.append(top, meta, when);
+        card.addEventListener("click", () => openCase(item.caseId));
+        mobile.appendChild(card);
+      });
+    }
+
+    function statusBadge(status) {
+      const badge = document.createElement("span");
+      badge.className = "status";
+      badge.dataset.status = status || "待審核";
+      badge.textContent = status || "待審核";
+      return badge;
+    }
+
+    function addPair(grid, label, content) {
+      const wrap = document.createElement("div");
+      const dt = document.createElement("dt");
+      const dd = document.createElement("dd");
+      dt.textContent = label;
+      dd.textContent = text(content);
+      wrap.append(dt, dd);
+      grid.appendChild(wrap);
+    }
+
+    function detailSection(title) {
+      const section = document.createElement("section");
+      section.className = "detail-section";
+      const h = document.createElement("h3");
+      h.textContent = title;
+      section.appendChild(h);
+      return section;
+    }
+
+    function detailGrid(pairs) {
+      const grid = document.createElement("dl");
+      grid.className = "detail-grid";
+      pairs.forEach((pair) => addPair(grid, pair[0], pair[1]));
+      return grid;
+    }
+
+    async function openCase(caseId) {
+      if (!caseId) return;
+      currentCaseId = caseId;
+      const drawer = $("#case-drawer");
+      drawer.hidden = false;
+      document.body.style.overflow = "hidden";
+      $("#drawer-title").textContent = caseId;
+      $("#drawer-subtitle").textContent = "載入完整資料中…";
+      $("#drawer-content").innerHTML = '<p class="loading">載入中…</p>';
+      try {
+        const data = await auth("adminGetCase", { caseId: caseId });
+        renderDetail(data.caseData);
+      } catch (error) {
+        if (isAuthError(error)) {
+          closeDrawer();
+          return showLogin(error.message);
+        }
+        $("#drawer-content").textContent = error.message || "無法載入案件";
+      }
+    }
+
+    function renderDetail(data) {
+      const host = $("#drawer-content");
+      host.replaceChildren();
+      $("#drawer-subtitle").textContent = text(data.submittedAt) + " · " + text(data.customerId);
+
+      const owner = detailSection("飼主與案件");
+      owner.appendChild(detailGrid([
+        ["飼主", data.owner && data.owner.name],
+        ["客戶編號", data.customerId],
+        ["電話", data.owner && data.owner.phone],
+        ["Email", data.owner && data.owner.email],
+        ["LINE", data.owner && data.owner.lineName],
+        ["緊急聯絡人", data.owner && data.owner.emergencyName],
+        ["緊急電話", data.owner && data.owner.emergencyPhone],
+        ["條款版本", data.termsVersion],
+        ["簽署時間", data.signatureAt],
+        ["OTP", data.otpResult]
+      ]));
+      const links = document.createElement("div");
+      links.className = "detail-actions";
+      if (data.pdfUrl) links.appendChild(linkButton(data.pdfUrl, "開啟 PDF"));
+      if (data.folderUrl) links.appendChild(linkButton(data.folderUrl, "開啟雲端資料夾"));
+      const copyId = document.createElement("button");
+      copyId.type = "button";
+      copyId.className = "btn secondary";
+      copyId.textContent = "複製客戶編號";
+      copyId.addEventListener("click", () => copyText(data.customerId, "已複製客戶編號"));
+      links.appendChild(copyId);
+      const prefill = document.createElement("button");
+      prefill.type = "button";
+      prefill.className = "btn secondary";
+      prefill.textContent = "複製舊客帶入連結";
+      prefill.addEventListener("click", () => {
+        const url = new URL("index.html", location.href);
+        url.hash = "returning=" + encodeURIComponent(data.customerId || "");
+        copyText(url.href, "已複製帶入連結");
+      });
+      links.appendChild(prefill);
+      owner.appendChild(links);
+      host.appendChild(owner);
+
+      const pets = detailSection("毛孩資料");
+      (data.pets || []).forEach((pet, index) => {
+        const article = document.createElement("article");
+        article.className = "pet-detail";
+        const h = document.createElement("h4");
+        h.textContent = "毛孩 " + (index + 1) + " · " + text(pet.name);
+        article.append(h, detailGrid([
+          ["性別", pet.gender],
+          ["品種", pet.breed],
+          ["年齡", pet.age ? (/歲/.test(String(pet.age)) ? pet.age : pet.age + " 歲") : ""],
+          ["體重", pet.weightKg ? pet.weightKg + " kg" : ""],
+          ["是否結紮", pet.neutered],
+          ["是否發情", pet.inHeat],
+          ["親狗親人", pet.sociability],
+          ["護食／敏感", pet.guarding],
+          ["牽繩", pet.leash],
+          ["固定獸醫院", pet.hasVet + (pet.vetInfo ? " · " + pet.vetInfo : "")],
+          ["近 14 天健康", pet.health14],
+          ["疾病紀錄", pet.diseases],
+          ["驅蟲", pet.deworm],
+          ["滴劑／口服藥", pet.preventative],
+          ["注意事項", pet.notes]
+        ]));
+        pets.appendChild(article);
+      });
+      host.appendChild(pets);
+
+      const manage = detailSection("店家處理");
+      const controls = document.createElement("div");
+      controls.className = "update-grid";
+      const statusField = document.createElement("div");
+      statusField.className = "field";
+      const statusLabel = document.createElement("label");
+      statusLabel.htmlFor = "detail-status";
+      statusLabel.textContent = "案件狀態";
+      const select = document.createElement("select");
+      select.id = "detail-status";
+      ["待審核", "待聯繫", "已確認", "已完成", "已取消"].forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        option.selected = name === (data.status || "待審核");
+        select.appendChild(option);
+      });
+      statusField.append(statusLabel, select);
+      const noteField = document.createElement("div");
+      noteField.className = "field";
+      const noteLabel = document.createElement("label");
+      noteLabel.htmlFor = "detail-note";
+      noteLabel.textContent = "店家內部備註（客人不會看到）";
+      const note = document.createElement("textarea");
+      note.id = "detail-note";
+      note.maxLength = 1200;
+      note.placeholder = "例如：已電話確認、需要單獨照護、下次提醒事項";
+      note.value = data.note || "";
+      noteField.append(noteLabel, note);
+      controls.append(statusField, noteField);
+      manage.appendChild(controls);
+      if (data.updatedAt) {
+        const meta = document.createElement("p");
+        meta.className = "surface-lede";
+        meta.textContent = "最後更新：" + data.updatedAt + (data.updatedBy ? " · " + data.updatedBy : "");
+        manage.appendChild(meta);
+      }
+      host.appendChild(manage);
+
+      const saveWrap = document.createElement("div");
+      saveWrap.className = "drawer-save";
+      const save = document.createElement("button");
+      save.type = "button";
+      save.className = "btn";
+      save.textContent = "儲存案件狀態與備註";
+      save.addEventListener("click", saveCase);
+      saveWrap.appendChild(save);
+      host.appendChild(saveWrap);
+    }
+
+    function linkButton(url, label) {
+      const link = document.createElement("a");
+      link.className = "btn secondary";
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = label;
+      return link;
+    }
+
+    async function saveCase(event) {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.textContent = "儲存中…";
+      try {
+        await auth("adminUpdateCase", {
+          caseId: currentCaseId,
+          caseStatus: value("detail-status"),
+          note: value("detail-note")
+        });
+        toast("案件已儲存");
+        await Promise.all([loadDashboard(), loadCases()]);
+        await openCase(currentCaseId);
+      } catch (error) {
+        if (isAuthError(error)) {
+          closeDrawer();
+          return showLogin(error.message);
+        }
+        toast(error.message || "儲存失敗");
+      } finally {
+        button.disabled = false;
+        button.textContent = "儲存案件狀態與備註";
+      }
+    }
+
+    function closeDrawer() {
+      $("#case-drawer").hidden = true;
+      document.body.style.overflow = "";
+      currentCaseId = "";
+    }
+
+    async function findCustomers() {
+      const host = $("#customer-results");
+      const query = value("customer-query");
+      host.replaceChildren();
+      if (!query) return;
+      const note = document.createElement("p");
+      note.className = "surface-lede";
+      note.textContent = "搜尋中…";
+      host.appendChild(note);
+      try {
+        const data = await auth("adminFindCustomers", { query: query });
+        host.replaceChildren();
+        if (!(data.customers || []).length) {
+          note.textContent = "找不到符合的舊客。";
+          host.appendChild(note);
+          return;
+        }
+        data.customers.forEach((customer) => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "customer-item";
+          const title = document.createElement("strong");
+          title.textContent = text(customer.ownerName) + " · " + text(customer.customerId);
+          const pets = document.createElement("span");
+          pets.textContent = (customer.petNames || []).join("、") + " · " + text(customer.phone);
+          const count = document.createElement("span");
+          count.textContent = text(customer.caseCount) + " 筆案件 · 最近 " + text(customer.latestAt);
+          item.append(title, pets, count);
+          item.addEventListener("click", () => {
+            $("#case-query").value = customer.customerId || customer.phone || customer.ownerName || "";
+            $("#filter-form").dispatchEvent(new Event("submit", { cancelable: true }));
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+          host.appendChild(item);
+        });
+      } catch (error) {
+        if (isAuthError(error)) return showLogin(error.message);
+        host.replaceChildren();
+        note.textContent = error.message || "搜尋失敗";
+        host.appendChild(note);
+      }
+    }
+
+    async function copyText(content, successMessage) {
+      if (!content) return toast("目前沒有可複製的內容");
+      try {
+        await navigator.clipboard.writeText(String(content));
+        toast(successMessage);
+      } catch (error) {
+        const area = document.createElement("textarea");
+        area.value = String(content);
+        area.style.position = "fixed";
+        area.style.opacity = "0";
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        area.remove();
+        toast(successMessage);
+      }
+    }
+
+    $("#login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = $("#login-button");
+      const box = $("#login-message");
+      box.hidden = true;
+      button.disabled = true;
+      button.textContent = "登入中…";
+      try {
+        const data = await api({
+          action: "adminLogin",
+          username: value("username"),
+          password: value("password")
+        });
+        setSession(data.token);
+        $("#password").value = "";
+        showApp();
+        await refreshAll(true);
+      } catch (error) {
+        box.textContent = error.message || "登入失敗";
+        box.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.textContent = "安全登入";
+      }
+    });
+
+    $("#logout-button").addEventListener("click", async () => {
+      try { await auth("adminLogout"); } catch (error) {}
+      showLogin("已安全登出。");
+    });
+    $("#refresh-button").addEventListener("click", () => refreshAll(false));
+    $("#filter-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadCases().catch((error) => {
+        if (isAuthError(error)) showLogin(error.message);
+        else toast(error.message || "查詢失敗");
+      });
+    });
+    $("#customer-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      findCustomers();
+    });
+    $("#drawer-close").addEventListener("click", closeDrawer);
+    $("#case-drawer").addEventListener("click", (event) => {
+      if (event.target === event.currentTarget) closeDrawer();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !$("#case-drawer").hidden) closeDrawer();
+    });
+
+    token = sessionStorage.getItem(SESSION_KEY) || "";
+    if (token) {
+      showApp();
+      refreshAll(true);
+    } else {
+      showLogin("");
+    }
+  })();
+  </script>
+</body>
+</html>
