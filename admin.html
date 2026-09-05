@@ -216,10 +216,41 @@
     }
     .page-head p { margin: 4px 0 0; color: var(--muted); font-size: .88rem; }
     .page-head .btn { white-space: nowrap; }
+    .sync-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 5px;
+    }
+    .sync-line p { margin: 0; }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      color: #4F6A5B;
+      background: #E2E9E5;
+      font-size: .7rem;
+      font-weight: 700;
+    }
+    .live-badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #668171;
+      box-shadow: 0 0 0 4px rgba(102, 129, 113, .13);
+    }
+    .live-badge[data-state="loading"]::before { animation: live-pulse 1s infinite alternate; }
+    .live-badge[data-state="error"] { color: #875247; background: #EFE4E1; }
+    .live-badge[data-state="error"]::before { background: #9A5848; box-shadow: none; }
+    @keyframes live-pulse { to { opacity: .35; transform: scale(.72); } }
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-bottom: 18px;
     }
@@ -361,6 +392,39 @@
       background: var(--warm);
       font-size: .8rem;
     }
+    .status-overview { display: grid; gap: 7px; }
+    .status-jump {
+      width: 100%;
+      min-height: 38px;
+      border: 0;
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--ink);
+      background: var(--warm);
+      box-shadow: inset 0 0 0 1px var(--line);
+      text-align: left;
+      font-size: .78rem;
+    }
+    .status-jump strong {
+      min-width: 30px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: var(--cocoa);
+      background: var(--paper);
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    .focus-note {
+      margin: 11px 0 0;
+      border-radius: 13px;
+      padding: 10px 11px;
+      color: var(--muted);
+      background: #F5EADF;
+      font-size: .75rem;
+    }
 
     .drawer {
       position: fixed;
@@ -466,6 +530,7 @@
       .side-column { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .side-card + .side-card { margin-top: 0; }
       .filters { grid-template-columns: 1fr 135px 1fr 1fr auto; }
+      .metrics { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 680px) {
       .topbar-inner, main { width: min(100% - 20px, 1180px); }
@@ -550,7 +615,10 @@
         <div>
           <p class="eyebrow">today at nicopark</p>
           <h1>入園案件</h1>
-          <p id="last-sync">尚未同步</p>
+          <div class="sync-line">
+            <span class="live-badge" id="live-badge" data-state="loading">Google 試算表連動中</span>
+            <p id="last-sync">尚未同步</p>
+          </div>
         </div>
         <button class="btn secondary" type="button" id="refresh-button">重新整理</button>
       </div>
@@ -559,7 +627,9 @@
         <article class="metric" style="--tone:#E6D1C2"><span>今日新增</span><strong id="stat-today">—</strong></article>
         <article class="metric" style="--tone:#E9DFC2"><span>待處理</span><strong id="stat-pending">—</strong></article>
         <article class="metric" style="--tone:#CFDDD4"><span>已確認</span><strong id="stat-confirmed">—</strong></article>
-        <article class="metric" style="--tone:#D7DFE2"><span>全部案件</span><strong id="stat-total">—</strong></article>
+        <article class="metric" style="--tone:#E8D2CC"><span>健康提醒</span><strong id="stat-health">—</strong></article>
+        <article class="metric" style="--tone:#D7DFE2"><span>毛孩資料</span><strong id="stat-pets">—</strong></article>
+        <article class="metric" style="--tone:#DDD0C3"><span>全部案件</span><strong id="stat-total">—</strong></article>
       </section>
 
       <div class="workspace">
@@ -609,6 +679,12 @@
 
         <aside class="side-column">
           <section class="surface side-card">
+            <h2>案件進度</h2>
+            <p class="surface-lede">點選狀態可立即篩選案件清單。</p>
+            <div class="status-overview" id="status-overview"></div>
+            <p class="focus-note" id="focus-note">正在整理今日重點…</p>
+          </section>
+          <section class="surface side-card">
             <h2>找舊客</h2>
             <p class="surface-lede">輸入客戶編號、姓名、手機或毛孩名字。</p>
             <form class="customer-search" id="customer-form">
@@ -621,6 +697,7 @@
             <h2>管理捷徑</h2>
             <p class="surface-lede">原始資料與公開表單。</p>
             <div class="quick-links">
+              <a id="overview-link" href="#" target="_blank" rel="noopener noreferrer">開啟業主總覽 ↗</a>
               <a id="sheet-link" href="#" target="_blank" rel="noopener">開啟 Google 試算表 ↗</a>
               <a href="index.html" target="_blank" rel="noopener">開啟客人填寫頁 ↗</a>
             </div>
@@ -653,9 +730,15 @@
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfWDmN_fO0lW1sp4vbx8vx16s7DVJgoxNWi_r0ahd7Arq3aJhVhhIGP9EpvL99E7KT/exec";
     const SESSION_KEY = "nicopark-admin-session";
     const FETCH_TIMEOUT = 30000;
+    const AUTO_REFRESH_MS = 30000;
     let token = "";
     let currentCaseId = "";
     let toastTimer = null;
+    let autoRefreshTimer = null;
+    let countdownTimer = null;
+    let nextRefreshAt = 0;
+    let lastSyncAt = null;
+    let refreshInFlight = false;
 
     const $ = (selector, root) => (root || document).querySelector(selector);
 
@@ -702,7 +785,10 @@
     function setSession(sessionToken) {
       token = sessionToken || "";
       if (token) sessionStorage.setItem(SESSION_KEY, token);
-      else sessionStorage.removeItem(SESSION_KEY);
+      else {
+        sessionStorage.removeItem(SESSION_KEY);
+        stopAutoRefresh();
+      }
     }
 
     function showLogin(message) {
@@ -718,6 +804,7 @@
     function showApp() {
       $("#login-view").hidden = true;
       $("#app-view").hidden = false;
+      startAutoRefresh();
     }
 
     function toast(message) {
@@ -732,15 +819,60 @@
       return /登入已失效|登入已逾時|重新登入/.test(String(error && error.message || ""));
     }
 
-    async function loadDashboard() {
-      const data = await auth("adminDashboard");
+    function setLiveState(state, label) {
+      const badge = $("#live-badge");
+      badge.dataset.state = state;
+      badge.textContent = label;
+    }
+
+    function syncClock(date) {
+      return new Intl.DateTimeFormat("zh-TW", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).format(date);
+    }
+
+    function updateSyncText() {
+      if (!lastSyncAt) {
+        $("#last-sync").textContent = "尚未同步";
+        return;
+      }
+      const seconds = Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000));
+      $("#last-sync").textContent =
+        "最後同步 " + syncClock(lastSyncAt) + " · " + seconds + " 秒後自動更新";
+    }
+
+    function stopAutoRefresh() {
+      clearInterval(autoRefreshTimer);
+      clearInterval(countdownTimer);
+      autoRefreshTimer = null;
+      countdownTimer = null;
+      nextRefreshAt = 0;
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      if (!token) return;
+      nextRefreshAt = Date.now() + AUTO_REFRESH_MS;
+      autoRefreshTimer = setInterval(() => {
+        if (document.visibilityState === "visible") refreshAll(true);
+      }, AUTO_REFRESH_MS);
+      countdownTimer = setInterval(updateSyncText, 1000);
+    }
+
+    function applyDashboardData(data) {
       const stats = data.stats || {};
       $("#stat-today").textContent = text(stats.today);
       $("#stat-pending").textContent = text(stats.pending);
       $("#stat-confirmed").textContent = text(stats.confirmed);
+      $("#stat-health").textContent = text(stats.healthAlerts);
+      $("#stat-pets").textContent = text(stats.pets);
       $("#stat-total").textContent = text(stats.total);
       $("#admin-name").textContent = (data.username || "管理員") + " 已登入";
       if (data.sheetUrl) $("#sheet-link").href = data.sheetUrl;
+      if (data.overviewUrl) $("#overview-link").href = data.overviewUrl;
 
       const status = $("#status-filter");
       if (status.options.length === 1) {
@@ -751,6 +883,47 @@
           status.appendChild(option);
         });
       }
+      renderStatusOverview(stats.byStatus || {});
+      const focus = [];
+      if (Number(stats.pending || 0)) focus.push(Number(stats.pending) + " 筆待處理");
+      if (Number(stats.healthAlerts || 0)) focus.push(Number(stats.healthAlerts) + " 筆健康提醒");
+      if (!focus.length) focus.push("目前沒有待處理或健康提醒案件");
+      $("#focus-note").textContent = "今日新增 " + Number(stats.today || 0) + " 筆；" + focus.join("、") + "。";
+    }
+
+    function applyCaseList(data) {
+      renderCases(data.cases || []);
+      $("#result-count").textContent = "共 " + Number(data.totalMatched || 0) + " 筆";
+      $("#result-note").textContent = data.truncated ? "目前顯示最新 200 筆" : "";
+    }
+
+    function renderStatusOverview(counts) {
+      const host = $("#status-overview");
+      host.replaceChildren();
+      ["待審核", "待聯繫", "已確認", "已完成", "已取消"].forEach((name) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "status-jump";
+        const label = document.createElement("span");
+        label.textContent = name;
+        const count = document.createElement("strong");
+        count.textContent = Number(counts[name] || 0);
+        button.append(label, count);
+        button.addEventListener("click", () => {
+          $("#status-filter").value = name;
+          loadCases().catch((error) => {
+            if (isAuthError(error)) showLogin(error.message);
+            else toast(error.message || "查詢失敗");
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        host.appendChild(button);
+      });
+    }
+
+    async function loadDashboard() {
+      const data = await auth("adminDashboard");
+      applyDashboardData(data);
     }
 
     async function loadCases() {
@@ -762,27 +935,41 @@
         dateFrom: value("date-from"),
         dateTo: value("date-to")
       });
-      renderCases(data.cases || []);
-      $("#result-count").textContent = "共 " + Number(data.totalMatched || 0) + " 筆";
-      $("#result-note").textContent = data.truncated ? "目前顯示最新 200 筆" : "";
+      applyCaseList(data);
+    }
+
+    async function loadSnapshot(silent) {
+      if (!silent) $("#result-count").textContent = "載入中…";
+      const data = await auth("adminSnapshot", {
+        query: value("case-query"),
+        statusFilter: value("status-filter"),
+        dateFrom: value("date-from"),
+        dateTo: value("date-to")
+      });
+      applyDashboardData(data);
+      applyCaseList(data);
     }
 
     async function refreshAll(silent) {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
       const button = $("#refresh-button");
       button.disabled = true;
+      setLiveState("loading", "Google 試算表同步中");
       try {
-        await Promise.all([loadDashboard(), loadCases()]);
-        $("#last-sync").textContent = "最後同步 " + new Intl.DateTimeFormat("zh-TW", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false
-        }).format(new Date());
+        await loadSnapshot(silent);
+        lastSyncAt = new Date();
+        nextRefreshAt = Date.now() + AUTO_REFRESH_MS;
+        setLiveState("ready", "Google 試算表已連動");
+        updateSyncText();
         if (!silent) toast("資料已更新");
       } catch (error) {
         if (isAuthError(error)) return showLogin(error.message);
+        setLiveState("error", "同步暫時中斷");
+        $("#last-sync").textContent = "保留上次資料 · 請按重新整理";
         toast(error.message || "載入失敗");
       } finally {
+        refreshInFlight = false;
         button.disabled = false;
       }
     }
@@ -1040,7 +1227,7 @@
           note: value("detail-note")
         });
         toast("案件已儲存");
-        await Promise.all([loadDashboard(), loadCases()]);
+        await refreshAll(true);
         await openCase(currentCaseId);
       } catch (error) {
         if (isAuthError(error)) {
@@ -1169,6 +1356,12 @@
     });
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !$("#case-drawer").hidden) closeDrawer();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && token && lastSyncAt &&
+          Date.now() - lastSyncAt.getTime() >= AUTO_REFRESH_MS) {
+        refreshAll(true);
+      }
     });
 
     token = sessionStorage.getItem(SESSION_KEY) || "";
