@@ -511,7 +511,8 @@
     input[type="email"],
     input[type="number"],
     textarea,
-    .otp-input {
+    .otp-input,
+    select {
       width: 100%;
       height: 48px;
       border: 0;
@@ -525,6 +526,13 @@
       appearance: none;
       -webkit-appearance: none;
     }
+    select {
+      padding-right: 40px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'><path fill='%2353453A' d='M4.2 6.2 8 10l3.8-3.8'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-color: var(--warm);
+    }
     textarea {
       height: auto;
       min-height: 96px;
@@ -533,13 +541,29 @@
       line-height: 1.5;
     }
     input::placeholder, textarea::placeholder { color: #A8988A; }
-    input:focus, textarea:focus, .otp-input:focus {
+    input:focus, textarea:focus, .otp-input:focus, select:focus {
       outline: none;
       box-shadow: inset 0 0 0 1.5px var(--cocoa), 0 0 0 3px rgba(172, 157, 141, 0.28);
       background: #fff;
     }
-    input.is-invalid, textarea.is-invalid {
-      box-shadow: inset 0 0 0 1.5px var(--danger);
+    input.is-invalid, textarea.is-invalid, select.is-invalid {
+      box-shadow: inset 0 0 0 2px var(--danger);
+      background: color-mix(in srgb, var(--danger) 8%, #fff);
+    }
+    .field.is-need, fieldset.field.is-need {
+      border-radius: 16px;
+      padding: 8px;
+      background: color-mix(in srgb, var(--danger) 8%, var(--paper));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 45%, transparent);
+      animation: needPulse 1s ease-in-out 2;
+    }
+    @keyframes needPulse {
+      0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 45%, transparent); }
+      50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 18%, transparent); }
+    }
+    .agree.is-need, .sign-frame.is-need {
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--danger) 45%, transparent);
+      animation: needPulse 1s ease-in-out 2;
     }
     .suffix {
       position: relative;
@@ -793,9 +817,12 @@
     .need-count {
       margin: 0 0 8px;
       text-align: center;
-      font-size: 0.86rem;
-      font-weight: 700;
-      color: var(--cocoa-deep);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #7A3E32;
+      background: color-mix(in srgb, var(--danger) 12%, var(--paper));
+      padding: 10px 12px;
+      border-radius: 12px;
     }
     .cf-box {
       margin: 4px 0 8px;
@@ -992,6 +1019,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
+      .field.is-need, fieldset.field.is-need, .agree.is-need, .sign-frame.is-need { animation: none; }
       html { scroll-behavior: auto; }
       .panel { animation: none; }
       .btn { transition: none; }
@@ -1915,6 +1943,7 @@
       const root = scope ? document.getElementById(scope) : document;
       $$(".error", root).forEach((el) => { el.textContent = ""; });
       $$(".is-invalid", root).forEach((el) => el.classList.remove("is-invalid"));
+      $$(".is-need", root).forEach((el) => el.classList.remove("is-need"));
       $$(".banner", root).forEach((el) => el.remove());
     }
 
@@ -2354,14 +2383,31 @@
       return list;
     }
 
-    function paintIssue(issue) {
-      if (!issue) return;
-      setErr(issue.key, issue.msg);
-      if (issue.el) {
-        issue.el.classList.add("is-invalid");
-        const fold = issue.el.closest && issue.el.closest("details.fold");
-        if (fold) fold.open = true;
-      }
+    function markNeed(el) {
+      if (!el) return;
+      el.classList.add("is-invalid");
+      const wrap = el.closest("fieldset.field, .field, .agree, .sign-frame") || el;
+      wrap.classList.add("is-need");
+      const fold = el.closest && el.closest("details.fold");
+      if (fold) fold.open = true;
+    }
+    function paintIssues(list) {
+      (list || []).forEach((issue, i) => {
+        if (!issue) return;
+        if (i === 0) setErr(issue.key, issue.msg);
+        markNeed(issue.el);
+      });
+    }
+    function jumpToIssue(issue) {
+      const el = issue && issue.el;
+      const target = (el && (el.closest(".is-need") || el)) || document.querySelector(".is-need, .is-invalid");
+      if (!target) return;
+      target.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+      window.setTimeout(() => {
+        const focusEl = (el && typeof el.focus === "function") ? el : target.querySelector("input, select, textarea, button");
+        if (!focusEl || !focusEl.focus) return;
+        try { focusEl.focus({ preventScroll: true }); } catch (e) { try { focusEl.focus(); } catch (err) {} }
+      }, 280);
     }
 
     function updateNeedCount(n) {
@@ -2385,8 +2431,8 @@
         return true;
       }
       showBanner(1, "尚有 " + issues.length + " 個必填項目");
-      paintIssue(issues[0]);
-      firstErrorFocus("step-1");
+      paintIssues(issues);
+      jumpToIssue(issues[0]);
       return false;
     }
 
