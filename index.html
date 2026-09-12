@@ -961,6 +961,24 @@
       text-decoration: none;
       font-weight: 600;
     }
+    .maker-egg {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 6px 10px;
+      border: 0;
+      background: none;
+      color: color-mix(in srgb, var(--muted) 65%, transparent);
+      font: inherit;
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      cursor: pointer;
+    }
+    .maker-note {
+      margin: 6px 0 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
     .case-box span {
       display: block;
       font-size: 0.75rem;
@@ -1641,6 +1659,8 @@
       地址　臺中市北屯區敦富五街37號<br />
       預約　<a href="tel:0901072200">0901-072-200</a>
       　LINE　<a href="https://lin.ee/01Rj2ph" target="_blank" rel="noopener noreferrer">@niconicopet</a>
+      <br /><button type="button" class="maker-egg" id="maker-egg" aria-label="彩蛋">✦ ✦ ✦</button>
+      <p class="maker-note" id="maker-note" hidden>Developed by YU HSIANG</p>
     </footer>
   </div>
 
@@ -1854,7 +1874,7 @@
      * 重新部署後網址若改變，這裡一定要一起改，並請客人用 ?v=25 這類參數避開快取。
      * 請勿在前端放入三竹簡訊帳密、API Key、Google 憑證或 Turnstile Secret。
      */
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxWAqXPbNKhk4F5mL08t1Dp6OuWBKdW69i6pILv8uvG0ICYSuImnNCo9FPlz9cCxVQ4/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfWDmN_fO0lW1sp4vbx8vx16s7DVJgoxNWi_r0ahd7Arq3aJhVhhIGP9EpvL99E7KT/exec";
     /**
      * Cloudflare Turnstile 的 Site Key（可公開，不是密鑰）。
      * 到 https://dash.cloudflare.com 建立 Turnstile 小工具後貼上。
@@ -3119,6 +3139,10 @@
       logoTaps = 0;
       sprinklePaws(9, document.getElementById("logo-egg"));
       announce("有一隻毛孩偷偷路過");
+    });
+    document.getElementById("maker-egg").addEventListener("click", () => {
+      document.getElementById("maker-note").hidden = false;
+      sprinklePaws(6, document.getElementById("maker-egg"));
     });
     document.getElementById("agreeTerms").addEventListener("change", (e) => {
       if (e.target.checked) sprinklePaws(5, e.target);
